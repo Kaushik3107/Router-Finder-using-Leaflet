@@ -1,0 +1,29 @@
+<!-- src/app/map/map.component.html -->
+<div class="map-container">
+  <h1>Route Finder</h1>
+  <form (ngSubmit)="plotRoute()">
+    <mat-form-field>
+      <input
+        matInput
+        placeholder="Starting Point (e.g., New York)"
+        [(ngModel)]="startPoint"
+        name="startPoint"
+        required
+      />
+    </mat-form-field>
+
+    <mat-form-field>
+      <input
+        matInput
+        placeholder="Destination Point (e.g., Los Angeles)"
+        [(ngModel)]="destinationPoint"
+        name="destinationPoint"
+        required
+      />
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" type="submit">Submit</button>
+  </form>
+
+  <div id="map" class="map"></div>
+</div>
