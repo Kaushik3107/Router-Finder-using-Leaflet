@@ -1,6 +1,8 @@
 <!-- src/app/map/map.component.html -->
 <div class="map-container">
-  <h1>Route Finder</h1>
+  <div class="nav">
+    <h1>Route Simulation</h1>
+  </div>
   <form (ngSubmit)="plotRoute()">
     <mat-form-field>
       <input
@@ -26,4 +28,14 @@
   </form>
 
   <div id="map" class="map"></div>
+
+  <!-- Travel Information Display -->
+  <div class="travel-info">
+    <h2>Travel Information</h2>
+    <p><strong>From:</strong> {{ startPoint }}</p>
+    <p><strong>To:</strong> {{ destinationPoint }}</p>
+    <p *ngIf="travelTime">
+      <strong>Estimated Time:</strong> {{ travelTime }} mins
+    </p>
+  </div>
 </div>
