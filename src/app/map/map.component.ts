@@ -1,6 +1,13 @@
-// src/app/map/map.component.ts
 import { Component, OnInit } from '@angular/core';
 import * as L from 'leaflet';
+
+// Correctly setting the marker icons paths for Vercel
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl:
+    'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+});
 
 @Component({
   selector: 'app-map',
@@ -16,8 +23,7 @@ export class MapComponent implements OnInit {
   distance: string = ''; // Distance in kilometers
   travelTime: string = ''; // Travel time in hours and minutes
 
-  private openRouteServiceApiKey =
-    '5b3ce3597851110001cf6248154ccb1b15a44abbaef87233f15acae9'; // Replace with your API key
+  private openRouteServiceApiKey = 'YOUR_API_KEY'; // Replace with your API key
 
   ngOnInit(): void {
     // Initialize the Leaflet map
