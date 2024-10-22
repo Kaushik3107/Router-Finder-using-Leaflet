@@ -1,12 +1,19 @@
 import { Component, OnInit } from '@angular/core';
 import * as L from 'leaflet';
 
-// Correctly setting the marker icons paths for Vercel
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl:
-    'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+// Define custom marker icons
+const startIcon = L.icon({
+  iconUrl: 'https://cdn-icons-png.flaticon.com/512/252/252025.png', // Replace with your desired icon URL
+  iconSize: [38, 38], // size of the icon
+  iconAnchor: [22, 94], // point of the icon which will correspond to marker's location
+  popupAnchor: [-3, -76], // point from which the popup should open relative to the iconAnchor
+});
+
+const destinationIcon = L.icon({
+  iconUrl: 'https://cdn-icons-png.flaticon.com/512/1397/1397898.png', // Replace with your desired icon URL
+  iconSize: [38, 38], // size of the icon
+  iconAnchor: [22, 94], // point of the icon which will correspond to marker's location
+  popupAnchor: [-3, -76], // point from which the popup should open relative to the iconAnchor
 });
 
 @Component({
@@ -50,12 +57,12 @@ export class MapComponent implements OnInit {
         this.map.removeLayer(this.polylineLayer);
       }
 
-      // Add markers for both points
-      L.marker(startCoords)
+      // Add custom markers for both points
+      L.marker(startCoords, { icon: startIcon })
         .addTo(this.markerLayer)
         .bindPopup('Start')
         .openPopup();
-      L.marker(destinationCoords)
+      L.marker(destinationCoords, { icon: destinationIcon })
         .addTo(this.markerLayer)
         .bindPopup('Destination')
         .openPopup();
