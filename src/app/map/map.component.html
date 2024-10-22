@@ -1,8 +1,5 @@
-<!-- src/app/map/map.component.html -->
 <div class="map-container">
-  <div class="nav">
-    <h1>Route Simulation</h1>
-  </div>
+  <h1>Route Finder</h1>
   <form (ngSubmit)="plotRoute()">
     <mat-form-field>
       <input
@@ -13,6 +10,15 @@
         required
       />
     </mat-form-field>
+
+    <button
+      mat-icon-button
+      type="button"
+      (click)="swapCities()"
+      aria-label="Swap Cities"
+    >
+      🔄
+    </button>
 
     <mat-form-field>
       <input
@@ -27,15 +33,10 @@
     <button mat-raised-button color="primary" type="submit">Submit</button>
   </form>
 
-  <div id="map" class="map"></div>
-
-  <!-- Travel Information Display -->
-  <div class="travel-info">
-    <h2>Travel Information</h2>
-    <p><strong>From:</strong> {{ startPoint }}</p>
-    <p><strong>To:</strong> {{ destinationPoint }}</p>
-    <p *ngIf="travelTime">
-      <strong>Estimated Time:</strong> {{ travelTime }} mins
-    </p>
+  <div class="info">
+    <p><strong>Distance:</strong> {{ distance }}</p>
+    <p><strong>Travel Time:</strong> {{ travelTime }}</p>
   </div>
+
+  <div id="map" class="map"></div>
 </div>

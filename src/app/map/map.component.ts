@@ -11,21 +11,23 @@ export class MapComponent implements OnInit {
   map: any;
   startPoint: string = '';
   destinationPoint: string = '';
-  markerLayer: L.LayerGroup = L.layerGroup(); // Marker group
-  polylineLayer: L.Polyline | null = null; // Store polyline
-  travelMarker: L.Marker | null = null; // Moving marker
-  travelTime: number | null = null; // Estimated travel time in minutes
+  markerLayer: L.LayerGroup = L.layerGroup(); // Manage markers
+  polylineLayer: L.Polyline | null = null; // Store the polyline
+  distance: string = ''; // Distance in kilometers
+  travelTime: string = ''; // Travel time in hours and minutes
+
+  private openRouteServiceApiKey =
+    '5b3ce3597851110001cf6248154ccb1b15a44abbaef87233f15acae9'; // Replace with your API key
 
   ngOnInit(): void {
-    // Initialize the map
+    // Initialize the Leaflet map
     this.map = L.map('map').setView([39.8283, -98.5795], 4); // USA center
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors',
     }).addTo(this.map);
 
-    // Add marker layer to the map
-    this.markerLayer.addTo(this.map);
+    this.markerLayer.addTo(this.map); // Add marker layer to map
   }
 
   async plotRoute() {
@@ -33,20 +35,16 @@ export class MapComponent implements OnInit {
     const destinationCoords = await this.getCoordinates(this.destinationPoint);
 
     if (startCoords && destinationCoords) {
-      // Set map view to the starting point
+      // Set the map view to the starting point
       this.map.setView(startCoords, 6);
 
-      // Clear previous markers and polylines
+      // Clear previous markers and polyline
       this.markerLayer.clearLayers();
       if (this.polylineLayer) {
         this.map.removeLayer(this.polylineLayer);
       }
-      if (this.travelMarker) {
-        this.map.removeLayer(this.travelMarker);
-        this.travelMarker = null; // Reset travelMarker
-      }
 
-      // Add start and destination markers
+      // Add markers for both points
       L.marker(startCoords)
         .addTo(this.markerLayer)
         .bindPopup('Start')
@@ -56,18 +54,14 @@ export class MapComponent implements OnInit {
         .bindPopup('Destination')
         .openPopup();
 
-      // Draw a polyline between the two points
+      // Draw polyline between the points
       this.polylineLayer = L.polyline([startCoords, destinationCoords], {
         color: 'blue',
       });
       this.polylineLayer.addTo(this.map);
 
-      // Calculate travel time (assume 80 km/h speed)
-      const distance = this.calculateDistance(startCoords, destinationCoords);
-      this.travelTime = Math.ceil((distance / 80) * 60); // in minutes
-
-      // Start the marker simulation
-      this.simulateTravel(startCoords, destinationCoords);
+      // Calculate real distance and travel time using OpenRouteService API
+      await this.calculateDistanceAndTime(startCoords, destinationCoords);
     } else {
       alert('Invalid locations! Please enter valid points.');
     }
@@ -86,54 +80,42 @@ export class MapComponent implements OnInit {
     }
   }
 
-  calculateDistance(start: [number, number], end: [number, number]): number {
-    const [lat1, lon1] = start;
-    const [lat2, lon2] = end;
+  async calculateDistanceAndTime(
+    startCoords: [number, number],
+    destinationCoords: [number, number]
+  ) {
+    const url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${this.openRouteServiceApiKey}`;
+    const body = {
+      coordinates: [startCoords.reverse(), destinationCoords.reverse()],
+    };
 
-    const R = 6371; // Radius of the Earth in km
-    const dLat = this.degToRad(lat2 - lat1);
-    const dLon = this.degToRad(lon2 - lon1);
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
 
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(this.degToRad(lat1)) *
-        Math.cos(this.degToRad(lat2)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
+    const data = await response.json();
 
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c; // Distance in km
+    if (data.routes && data.routes.length > 0) {
+      const route = data.routes[0];
+      const distanceInKm = (route.summary.distance / 1000).toFixed(2); // Convert meters to km
+      const durationInMinutes = route.summary.duration / 60; // Convert seconds to minutes
+
+      this.distance = `${distanceInKm} km`;
+      this.travelTime = `${Math.floor(durationInMinutes / 60)} hrs ${Math.round(
+        durationInMinutes % 60
+      )} mins`;
+    } else {
+      alert('Unable to calculate distance and time.');
+    }
   }
 
-  degToRad(deg: number): number {
-    return deg * (Math.PI / 180);
-  }
-
-  simulateTravel(start: [number, number], end: [number, number]) {
-    const latDiff = (end[0] - start[0]) / 100;
-    const lonDiff = (end[1] - start[1]) / 100;
-
-    let currentLat = start[0];
-    let currentLon = start[1];
-    let step = 0;
-
-    // Create a new marker at the starting point
-    this.travelMarker = L.marker([currentLat, currentLon]).addTo(this.map);
-
-    const interval = setInterval(() => {
-      if (step >= 100) {
-        clearInterval(interval); // Stop the simulation when it completes
-        return;
-      }
-
-      // Ensure the marker exists before updating its position
-      if (this.travelMarker) {
-        currentLat += latDiff;
-        currentLon += lonDiff;
-        this.travelMarker.setLatLng([currentLat, currentLon]);
-      }
-
-      step++;
-    }, 700); // Adjust interval for speed
+  swapCities() {
+    const temp = this.startPoint;
+    this.startPoint = this.destinationPoint;
+    this.destinationPoint = temp;
   }
 }
